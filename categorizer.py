@@ -3,15 +3,19 @@ import torch
 import json
 
 MODEL_NAME = "moctarsmal/bank-transactions-statements-classification"
+VOCAB_PATH = "C:/Users/K TEJASWI/Downloads/corrected_tokenizer/vocab.json"
 
-# Correct and reload the tokenizer
-tokenizer_path = "C:/Users/K TEJASWI/Downloads/corrected_tokenizer/vocab.json"
+# Load the corrected vocab.json
+with open(VOCAB_PATH, "r", encoding="utf-8") as f:
+    vocab = json.load(f)
 
-with open(tokenizer_path , encoding="utf-8") as f:
-    corrected_vocab = json.load(f)
+# Load the tokenizer and set special tokens
+tokenizer = AutoTokenizer.from_pretrained(
+    MODEL_NAME,
+    use_fast=False
+)
 
-
-# Define special tokens explicitly
+# Explicitly add special tokens
 special_tokens = {
     "bos_token": "<s>",
     "eos_token": "</s>",
@@ -19,13 +23,9 @@ special_tokens = {
     "unk_token": "<unk>",
     "additional_special_tokens": ["<special0>", "<special1>", "<special2>", "<special3>", "<special4>"]
 }
-
-# Load tokenizer with corrected vocab
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
-tokenizer.add_tokens(list(corrected_vocab.keys()))
 tokenizer.add_special_tokens(special_tokens)
 
-# Resize the model's embeddings to match the updated tokenizer
+# Load the model and resize embeddings to match the updated tokenizer
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
 model.resize_token_embeddings(len(tokenizer))
 
@@ -36,16 +36,12 @@ def categorize_transaction(description):
     """
     Classify a transaction as Utility or Non-Utility based on its description.
     """
-    # Tokenize the input description
     inputs = tokenizer(description, return_tensors="pt", truncation=True, padding=True)
-
-    # Get predictions from the model
     with torch.no_grad():
         outputs = model(**inputs)
         predicted_label = torch.argmax(outputs.logits, dim=1).item()
-
-    # Map the predicted label to its corresponding category
     return LABELS[predicted_label]
+
 
 
 
