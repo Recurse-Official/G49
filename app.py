@@ -1,51 +1,67 @@
 from flask import Flask, request, jsonify
-from categorizer import categorize_transaction, update_feedback
+from categorizer import categorize_transaction
 
 app = Flask(__name__)
 
-# User budgets
-user_budgets = {"utilities": 0, "non-utilities": 0}
-user_spending = {"utilities": 0, "non-utilities": 0}
+# Budget and spending tracking
+user_budgets = {"Utility": 0, "Non-Utility": 0}
+user_spending = {"Utility": 0, "Non-Utility": 0}
 
 @app.route("/set_budget", methods=["POST"])
 def set_budget():
-    data = request.get_json()
-    user_budgets["utilities"] = data.get("utilities", 0)
-    user_budgets["non-utilities"] = data.get("non_utilities", 0)
-    return jsonify({"message": "Budgets set successfully"}), 200
+    """
+    Set user budgets for utilities and non-utilities.
+    """
+    try:
+        data = request.get_json()
+        user_budgets["Utility"] = data.get("utility", 0)
+        user_budgets["Non-Utility"] = data.get("non_utility", 0)
+
+        return jsonify({"message": "Budgets set successfully", "budgets": user_budgets}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/categorize", methods=["POST"])
 def categorize():
-    data = request.get_json()
-    description = data.get("description", "")
-    amount = data.get("amount", 0)
+    """
+    Categorize a transaction description and check budget.
+    """
+    try:
+        # Parse incoming JSON data
+        data = request.get_json()
+        description = data.get("description", "")
+        amount = data.get("amount", 0)
 
-    if not description:
-        return jsonify({"error": "No description provided"}), 400
+        if not description:
+            return jsonify({"error": "Description is required"}), 400
+        if amount <= 0:
+            return jsonify({"error": "Transaction amount must be greater than zero"}), 400
 
-    category, sub_category = categorize_transaction(description)
-    user_spending[category] += amount
+        # Get the category of the transaction
+        category = categorize_transaction(description)
 
-    # Check for budget warnings
-    if user_spending[category] > user_budgets[category]:
-        warning = f"Warning: You have exceeded your budget for {category}!"
-    else:
-        warning = f"You are within your budget for {category}."
+        # Update spending and check budget
+        user_spending[category] += amount
+        warning = None
 
-    return jsonify({"category": category, "sub_category": sub_category, "warning": warning})
+        if user_spending[category] > user_budgets[category]:
+            warning = f"Warning: You have exceeded your budget for {category}!"
 
-@app.route("/feedback", methods=["POST"])
-def feedback():
-    data = request.get_json()
-    description = data.get("description", "")
-    category = data.get("category", "")
-    sub_category = data.get("sub_category", "")
+        # Response
+        response = {
+            "description": description,
+            "category": category,
+            "amount": amount,
+            "current_spending": user_spending[category],
+            "budget": user_budgets[category],
+            "warning": warning
+        }
+        return jsonify(response), 200
 
-    if not description or not category:
-        return jsonify({"error": "Incomplete feedback provided"}), 400
-
-    update_feedback(description, category, sub_category)
-    return jsonify({"message": "Feedback received and model updated"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
