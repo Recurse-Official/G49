@@ -3,7 +3,9 @@ import torch
 
 # Load the pretrained model and tokenizer
 MODEL_NAME = "moctarsmal/bank-transactions-statements-classification"
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+
+# Use slow tokenizer to avoid vocabulary issues
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
 
 # Mapping model output to categories
@@ -26,4 +28,5 @@ def categorize_transaction(description):
 
     # Map the predicted label to its corresponding category
     return LABELS[predicted_label]
+
 
