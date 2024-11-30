@@ -7,8 +7,9 @@ MODEL_NAME = "moctarsmal/bank-transactions-statements-classification"
 # Correct and reload the tokenizer
 tokenizer_path = "C:/Users/K TEJASWI/Downloads/vocab.json"
 
-with open(tokenizer_path, 'r') as f:
+with open("vocab.json", encoding="utf-8") as f:
     corrected_vocab = json.load(f)
+
 
 # Define special tokens explicitly
 special_tokens = {
