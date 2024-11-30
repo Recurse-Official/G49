@@ -5,7 +5,7 @@ import json
 MODEL_NAME = "moctarsmal/bank-transactions-statements-classification"
 
 # Correct and reload the tokenizer
-tokenizer_path = "C:/Users/K TEJASWI/Downloads/vocab.json"
+tokenizer_path = "C:/Users/K TEJASWI/Downloads/corrected_tokenizer/vocab.json"
 
 with open(tokenizer_path , encoding="utf-8") as f:
     corrected_vocab = json.load(f)
