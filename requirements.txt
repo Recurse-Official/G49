@@ -1,0 +1,4 @@
+flask
+spacy
+gunicorn
+pickle-mixin
