@@ -1,5 +1,5 @@
 // frontend/src/utils/auth.js
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 export const setToken = (token) => {
     localStorage.setItem('token', token);
