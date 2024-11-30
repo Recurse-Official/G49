@@ -37,6 +37,7 @@ def categorize():
             return jsonify({"error": "Description is required"}), 400
         if amount <= 0:
             return jsonify({"error": "Transaction amount must be greater than zero"}), 400
+        print(f"received description : {description}, amount :{amount}")
 
         # Get the category of the transaction
         category = categorize_transaction(description)
@@ -57,9 +58,12 @@ def categorize():
             "budget": user_budgets[category],
             "warning": warning
         }
+        print(f"Response; {response}")
         return jsonify(response), 200
 
     except Exception as e:
+        print(f"Error occurred: {e}")
+        print(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
