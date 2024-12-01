@@ -1,7 +1,8 @@
-# backend/routes/plaid.py
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.plaid_client import get_plaid_client
+from models import User, db  # Ensure User and db are imported
+from my_ml_model import categorize_transaction  # Import your ML model's function
 
 plaid_bp = Blueprint('plaid', __name__)
 
@@ -29,7 +30,6 @@ def exchange_public_token():
     exchange_response = client.Item.public_token.exchange(public_token)
     access_token = exchange_response['access_token']
     # Store access_token securely associated with the user
-    # e.g., save to User model
     user = User.query.get(user_id)
     user.plaid_access_token = access_token
     db.session.commit()
@@ -48,3 +48,44 @@ def get_transactions():
         end_date='2023-12-31'
     )
     return jsonify(response), 200
+
+@plaid_bp.route('/categorize_transactions', methods=['POST'])
+@jwt_required()
+def categorize_transactions():
+    """
+    Fetch transactions from Plaid, categorize them using the ML model, and return the results.
+    """
+    user_id = get_jwt_identity()
+    client = get_plaid_client()
+    user = User.query.get(user_id)
+    access_token = user.plaid_access_token
+
+    try:
+        # Fetch transactions from Plaid
+        response = client.Transactions.get(
+            access_token,
+            start_date='2023-01-01',
+            end_date='2023-12-31'
+        )
+        transactions = response['transactions']
+
+        # Process and categorize transactions
+        categorized_transactions = []
+        for txn in transactions:
+            description = txn.get('name', '')
+            amount = txn.get('amount', 0)
+
+            # Call your ML model to categorize the transaction
+            category = categorize_transaction(description)  # Your ML model's function
+
+            categorized_transactions.append({
+                "description": description,
+                "amount": amount,
+                "category": category
+            })
+
+        return jsonify(categorized_transactions), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
