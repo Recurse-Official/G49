@@ -34,3 +34,18 @@ class Reward(db.Model):
     month = db.Column(db.String(20), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     points = db.Column(db.Integer, default=0)
+class Offer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    discount = db.Column(db.Float, nullable=False)
+    expiration_date = db.Column(db.Date, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Foreign key to User
+
+    user = db.relationship('User', back_populates='offers')  # Establishing the relationship with User
+
+    def __repr__(self):
+        return f'<Offer {self.title}>'
+
+# Add a back reference in User model to establish the reverse relationship
+User.offers = db.relationship('Offer', back_populates='user', lazy=True
