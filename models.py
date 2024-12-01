@@ -1,8 +1,15 @@
-# backend/models.py
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from enum import Enum
 
 db = SQLAlchemy()
+
+# Enum for predefined categories (optional)
+class CategoryType(Enum):
+    GROCERY = "Groceries"
+    TRANSPORT = "Transport"
+    ENTERTAINMENT = "Entertainment"
+    MISC = "Miscellaneous"
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,8 +22,10 @@ class User(db.Model):
     categories = db.relationship('Category', backref='user', lazy=True, cascade="all, delete-orphan")
     transactions = db.relationship('Transaction', backref='user', lazy=True, cascade="all, delete-orphan")
     rewards = db.relationship('Reward', backref='user', lazy=True, cascade="all, delete-orphan")
+    offers = db.relationship('Offer', back_populates='user', lazy=True)
 
-# Additional fields as needed
+    def __repr__(self):
+        return f'<User {self.username}>'
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,13 +34,22 @@ class Category(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     transactions = db.relationship('Transaction', backref='category', lazy=True, cascade="all, delete-orphan")
 
+    def __repr__(self):
+        return f'<Category {self.name}>'
+
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Float, nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)  # Reference to Category
     date = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     is_utilities = db.Column(db.Boolean, nullable=True)  # Determined by backend logic
+    category_name = db.Column(db.String(100), nullable=True)  # Store category name (e.g., from ML model)
+
+    category = db.relationship('Category', backref='transactions', lazy=True)
+
+    def __repr__(self):
+        return f'<Transaction {self.id}, {self.category_name}>'
 
 class Reward(db.Model):
     __tablename__ = 'rewards'
@@ -40,6 +58,10 @@ class Reward(db.Model):
     month = db.Column(db.String(20), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     points = db.Column(db.Integer, default=0)
+
+    def __repr__(self):
+        return f'<Reward {self.user_id}, {self.month} {self.year}>'
+
 class Offer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -55,3 +77,5 @@ class Offer(db.Model):
 
 # Add a back reference in User model to establish the reverse relationship
 User.offers = db.relationship('Offer', back_populates='user', lazy=True)
+
+
