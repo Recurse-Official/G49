@@ -5,8 +5,8 @@ from flask import current_app
 def get_plaid_client():
     config = current_app.config
     client = Client(
-        client_id=config.PLAID_CLIENT_ID,
-        secret=config.PLAID_SECRET,
-        environment=config.PLAID_ENV,
+        client_id=config["674baed10feadb0019e09fa5"],
+        secret=config["d90fb3b19d7856b3f5b387fa30823f"],
+        environment="sandbox",
     )
     return client
