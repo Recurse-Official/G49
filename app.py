@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from models import db
 from routes import initialize_routes
+from flask_migrate import Migrate
 
 def create_app():
     app = Flask(__name__)
@@ -11,6 +12,7 @@ def create_app():
 
     CORS(app)
     db.init_app(app)
+    migrate = Migrate(app, db)
     JWTManager(app)
     
     initialize_routes(app)
