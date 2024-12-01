@@ -2,19 +2,19 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { setToken } from '../utils/auth';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate();
+    const history = useHistory();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const res = await axios.post('http://localhost:5000/auth/login', { username, password });
             setToken(res.data.access_token);
-            navigate("/dashboard");
+            history.push("/Login");
         } catch (err) {
             console.error(err);
             alert('Login failed');
