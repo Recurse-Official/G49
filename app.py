@@ -14,11 +14,8 @@ def create_app():
     db.init_app(app)
     migrate = Migrate(app, db)
     JWTManager(app)
-    
-    initialize_routes(app)
 
-    with app.app_context():
-        db.create_all()
+    initialize_routes(app)
 
     return app
 
