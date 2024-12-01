@@ -13,7 +13,7 @@ function App() {
                 <Route path="/login" component={Login} />
                 <Route path="/register" component={Register} />
                 <Route path="/dashboard" component={Dashboard} />
-		<Redirect from="/" to ="/login" />
+		<Redirect from="/" to ="/dashboard" />
                 {/* Add other routes */}
             </Switch>
         </Router>
