@@ -12,13 +12,18 @@ class User(db.Model):
     non_utilities_budget = db.Column(db.Float, default=0.0)
     remaining_utilities = db.Column(db.Float, default=0.0)
     remaining_non_utilities = db.Column(db.Float, default=0.0)
-    # Additional fields as needed
+    categories = db.relationship('Category', backref='user', lazy=True, cascade="all, delete-orphan")
+    transactions = db.relationship('Transaction', backref='user', lazy=True, cascade="all, delete-orphan")
+    rewards = db.relationship('Reward', backref='user', lazy=True, cascade="all, delete-orphan")
+
+# Additional fields as needed
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     type = db.Column(db.String(20), nullable=False)  # 'utility' or 'non-utility'
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    transactions = db.relationship('Transaction', backref='category', lazy=True, cascade="all, delete-orphan")
 
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,6 +34,7 @@ class Transaction(db.Model):
     is_utilities = db.Column(db.Boolean, nullable=True)  # Determined by backend logic
 
 class Reward(db.Model):
+    __tablename__ = 'rewards'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     month = db.Column(db.String(20), nullable=False)
@@ -48,4 +54,4 @@ class Offer(db.Model):
         return f'<Offer {self.title}>'
 
 # Add a back reference in User model to establish the reverse relationship
-User.offers = db.relationship('Offer', back_populates='user', lazy=True
+User.offers = db.relationship('Offer', back_populates='user', lazy=True)
