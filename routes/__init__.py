@@ -3,6 +3,7 @@ from .auth import auth_bp
 from .budget import budget_bp
 from .transaction import transaction_bp
 from .plaid import plaid_bp
+from .leaderboard import leaderboard_bp
 from .categories import categories_bp
 
 def initialize_routes(app):
@@ -11,4 +12,5 @@ def initialize_routes(app):
     app.register_blueprint(transaction_bp, url_prefix='/transactions')
     app.register_blueprint(categories_bp, url_prefix='/categories')
     app.register_blueprint(plaid_bp, url_prefix='/plaid')
+    app.register_blueprint(leaderboard_bp, url_prefix='/leaderboard')
     # Register other blueprints as needed
